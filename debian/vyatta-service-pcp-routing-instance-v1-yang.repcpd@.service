@@ -1,0 +1,11 @@
+[Unit]
+Description=Port Control Protocol (PCP) Daemon for routing-domain %i
+After=network-online.target
+
+[Service]
+SyslogIdentifier=repcpd-%i
+ExecStart=/usr/sbin/chvrf %i /usr/sbin/repcpd -n -f /run/repcpd/vrf/%i/repcpd.conf
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target

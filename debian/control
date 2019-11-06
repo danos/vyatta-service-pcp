@@ -1,0 +1,39 @@
+Source: vyatta-service-pcp
+Section: contrib/net
+Priority: optional
+Maintainer: Vyatta Package Maintainers <DL-vyatta-help@att.com>
+Build-Depends:
+ debhelper (>= 10),
+ dh-python,
+ dh-vci,
+ dh-yang,
+ python3
+Standards-Version: 4.1.2
+
+Package: vyatta-pcp-vci
+Architecture: all
+Depends:
+ python3,
+ python3-vci,
+ repcpd,
+ ${misc:Depends},
+ ${python3:Depends}
+Description: Port Control Protocol VCI component
+ The VCI Component to handle Port Control Protocol configuration
+
+Package: vyatta-service-pcp-v1-yang
+Architecture: all
+Depends:
+ vyatta-pcp-vci,
+ ${misc:Depends},
+ ${yang:Depends}
+Description: Port Control Protocol YANG module package
+ The YANG module package for vyatta-service-pcp-v1
+
+Package: vyatta-service-pcp-routing-instance-v1-yang
+Architecture: all
+Depends:
+ ${misc:Depends},
+ ${yang:Depends}
+Description: Port Control Protocol routing instance YANG module package
+ The YANG module package for vyatta-service-pcp-routing-instance-v1

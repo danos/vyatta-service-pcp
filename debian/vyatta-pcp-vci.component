@@ -1,0 +1,9 @@
+[Vyatta Component]
+Name=net.vyatta.vci.pcp
+Description=Port Control Protocol VCI Component
+ExecName=/opt/vyatta/sbin/vyatta-pcp-vci
+ConfigFile=/dev/null
+
+[Model net.vyatta.vci.pcp.v1]
+Modules=vyatta-service-pcp-v1, vyatta-service-pcp-routing-instance-v1
+ModelSets=vyatta-v1

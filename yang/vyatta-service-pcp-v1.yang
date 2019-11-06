@@ -1,0 +1,239 @@
+module vyatta-service-pcp-v1 {
+	namespace "urn:vyatta.com:mgmt:vyatta-service-pcp:1";
+	prefix vyatta-service-pcp-v1;
+
+	import configd-v1 {
+		prefix configd;
+	}
+	import vyatta-services-v1 {
+		prefix service;
+	}
+	import vyatta-types-v1 {
+		prefix types;
+	}
+
+	organization "AT&T Inc.";
+	contact
+		"AT&T Inc.
+		 Postal: 280 S. Akard Street
+		         Dallas, TX 25202
+		 Web: www.att.com";
+
+	description
+		"Copyright (c) 2019 AT&T Intellectual Property.
+		 All rights reserved.
+
+		 Redistribution and use in source and binary forms, with or
+		 without modification, are permitted provided that the following
+		 conditions are met:
+
+		 1. Redistributions of source code must retain the above copyright
+			notice, this list of conditions and the following disclaimer.
+		 2. Redistributions in binary form must reproduce the above
+			copyright notice, this list of conditions and the following
+			disclaimer in the documentation and/or other materials provided
+			with the distribution.
+		 3. Neither the name of the copyright holder nor the names of its
+			contributors may be used to endorse or promote products derived
+			from this software without specific prior written permission.
+
+		 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+		 'AS IS' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+		 LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+		 FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
+		 COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
+		 INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+		 BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+		 LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+		 CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+		 LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
+		 ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+		 POSSIBILITY OF SUCH DAMAGE.
+
+		 SPDX-License-Identifier: BSD-3-Clause
+
+		 The YANG module for vyatta-service-pcp-v1";
+
+	revision 2019-07-29 {
+		description "Initial revision of version 1.";
+	}
+
+	typedef pcp-types {
+		type enumeration {
+			enum cgnat {
+				description "Carrier Grade NAT";
+				configd:help "Carrier Grade NAT";
+			}
+		}
+	}
+
+	grouping pcp {
+		container pcp {
+			description
+				"The Port Control Protocol allows an IPv6 or IPv4 host to control how
+				 incoming IPv6 or IPv4 packets are translated and forwarded by a
+				 Network Address Translator (NAT) or simple firewall, and also allows
+				 a host to optimize its outgoing NAT keepalive messages.";
+			reference "RFC 6887";
+			configd:help "Port Control Protocol";
+
+			list feature-interface {
+				description "List of feature interfaces managed by PCP";
+				configd:help "List of feature interfaces managed by PCP";
+				configd:allowed "vyatta-interfaces.pl --show all --skip=lo";
+				key "name";
+				leaf name {
+					type types:interface-ifname;
+				}
+
+				list template {
+					description "List of templates";
+					configd:help "List of templates";
+					max-elements 1;
+					key "name";
+					leaf name {
+						description "Template name";
+						configd:help "Template name";
+						type leafref {
+							path "../../../server/template/name";
+						}
+					}
+
+					list internal-prefix {
+						description "Internal prefixes that template is applied to";
+						configd:help "Internal prefixes that template is applied to";
+						min-elements 1;
+						key "prefix";
+						leaf prefix {
+							type types:ip-prefix;
+						}
+					}
+				}
+			}
+
+			list server {
+				description "List of PCP servers";
+				configd:help "List of PCP servers";
+				max-elements 1;
+				key "name";
+				leaf name {
+					type types:alpha-numeric;
+				}
+
+				list listener {
+					description "List of listen addresses";
+					configd:help "List of listen addresses";
+					key "address";
+					leaf address {
+						type types:ip-address;
+					}
+
+					leaf port {
+						description "UDP port to listen on";
+						configd:help "UDP port to listen on";
+						type types:port;
+						default 5351;
+					}
+				}
+
+				container log {
+					description "PCP logging";
+					configd:help "PCP logging";
+					leaf debug {
+						description "Enable debug logging";
+						configd:help "Enable debug logging";
+						type empty;
+					}
+				}
+
+				leaf nonce-check {
+					description "Validate nonce";
+					configd:help "Validate nonce";
+					type boolean;
+					default true;
+				}
+
+				list template {
+					description "List of templates";
+					configd:help "List of templates";
+					max-elements 1;
+					key "name";
+
+					leaf name {
+						description "Template name";
+						configd:help "Template name";
+						type types:alpha-numeric;
+						must "count(../../../server/template[name = current()]) = 1" {
+							error-message "template names must be unique across servers";
+						}
+					}
+
+					container opcodes {
+						description "Supported Opcodes";
+						configd:help "Supported Opcodes";
+						container announce {
+							presence "ANNOUNCE Opcode";
+							configd:help "ANNOUNCE Opcode";
+						}
+						container map {
+							presence "MAP Opcode";
+							configd:help "MAP Opcode";
+						}
+					}
+
+					leaf type {
+						description "Template type";
+						configd:help "Template type";
+						type pcp-types;
+						mandatory true;
+					}
+				}
+
+				container third-party {
+					presence "Require third-party option";
+					configd:help "Require third-party option";
+					list interface {
+						description "Interfaces to accept requests from";
+						configd:help "Interfaces to accept requests from";
+						configd:allowed "vyatta-interfaces.pl --show all --skip=lo";
+						key "name";
+						leaf name {
+							type types:interface-ifname;
+						}
+					}
+				}
+
+				container announce {
+					configd:help "ANNOUNCE response from listener on start-up";
+					description "ANNOUNCE response from listener on start-up";
+
+					leaf multicast {
+						description "Multicast ANNOUNCE message";
+						configd:help "Multicast ANNOUNCE message";
+						type empty;
+					}
+
+					list unicast {
+						description "List of clients to unicast ANNOUNCE message";
+						configd:help "List of clients to unicast ANNOUNCE message";
+						key "address";
+						leaf address {
+							type types:ip-address;
+						}
+
+						leaf port {
+							description "UDP port client is listening on";
+							configd:help "UDP port client is listening on";
+							type types:port;
+							default 5350;
+						}
+					}
+				}
+			}
+		}
+	}
+
+	augment /service:service {
+		uses pcp;
+	}
+}

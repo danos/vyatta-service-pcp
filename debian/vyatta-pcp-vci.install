@@ -1,0 +1,3 @@
+scripts/vyatta-pcp-restart lib/vplane/poststart.d/
+scripts/vyatta-pcp-vci opt/vyatta/sbin/
+lib/vyatta/pcp usr/lib/python3/dist-packages/vyatta/

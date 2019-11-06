@@ -1,0 +1,18 @@
+#!/bin/sh
+# Copyright (c) 2019, AT&T Intellectual Property.
+# All rights reserved.
+#
+# SPDX-License-Identifier: GPL-2.0-only
+
+for conf in `find /run/repcpd/ -name repcpd.conf`
+do
+	case "$conf" in
+		/run/repcpd/repcpd.conf)
+			systemctl try-restart repcpd.service
+			;;
+		/run/repcpd/vrf/*/repcpd.conf)
+			vrf=`echo $conf | cut -d / -f 5`
+			systemctl try-restart repcpd@$vrf.service
+			;;
+	esac
+done

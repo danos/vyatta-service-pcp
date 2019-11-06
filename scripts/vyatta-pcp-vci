@@ -1,0 +1,20 @@
+#!/usr/bin/python3
+# Copyright (c) 2019, AT&T Intellectual Property.
+# All rights reserved.
+#
+# SPDX-License-Identifier: GPL-2.0-only
+
+import logging
+import vci
+from vyatta.pcp.config import PCPConfig
+
+logging.basicConfig(level=logging.INFO, format="%(message)s")
+
+if __name__ == "__main__":
+    config = PCPConfig(__file__)
+    (vci.Component("net.vyatta.vci.pcp")
+            .model(vci.Model("net.vyatta.vci.pcp.v1")
+            .config(config))
+        .subscribe("vyatta-routing-v1", "instance-added", config.new_vrf)
+	.run()
+	.wait())
